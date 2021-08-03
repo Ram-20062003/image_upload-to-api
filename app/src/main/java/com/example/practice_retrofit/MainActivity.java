@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
     List<String> list = new ArrayList<>();
     public static int GET_FROM_GALLERY=3;
     ImageView imageView;
+    File file_name;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,13 +59,13 @@ public class MainActivity extends AppCompatActivity {
         b_choose.setOnClickListener((new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                File file_name=bitmaptofile(bitmap_chosen,"pp");
                 Toast.makeText(getApplicationContext(),"path="+file_name.getAbsolutePath(),Toast.LENGTH_SHORT).show();
                 JsonHolder jsonHolder=retrofit.create(JsonHolder.class);
-                RequestBody requestBody=RequestBody.create(MediaType.parse("image/*"),file_name);
-                //MultipartBody.Part file=MultipartBody.Part.createFormData("file",file_name.getName(), requestBody);
+                RequestBody requestBody=RequestBody.create(MediaType.parse("images/*"),file_name);
+                MultipartBody.Part file=MultipartBody.Part.createFormData("file",file_name.getName(), requestBody);
                 RequestBody body=RequestBody.create(MediaType.parse("text/plain"),"Ram");
-                Call<Breed> call=jsonHolder.createBreed(requestBody,body);
+                MultipartBody.Part sub_id=MultipartBody.Part.createFormData("sub_id","2030",body);
+                Call<Breed> call=jsonHolder.createBreed(file,body);
                 Toast.makeText(MainActivity.this,"yes",Toast.LENGTH_SHORT).show();
                 call.enqueue(new Callback<Breed>() {
                     @Override
@@ -92,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
             Uri selectedImage = data.getData();
              bitmap_chosen = null;
             try {
-
+                  file_name=new File(selectedImage.getPath());
                 bitmap_chosen = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImage);
                 imageView.setImageBitmap(bitmap_chosen);
 
@@ -105,27 +106,4 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-    public File bitmaptofile(Bitmap bitmap, String filename)
-    {
-        File file=null;
-        try {
-             file = new File(Environment.getExternalStorageDirectory(), filename + ".jpg");
-
-
-            file.mkdir();
-            file.createNewFile();
-            ByteArrayOutputStream byteArrayOutputStream=new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG,0,byteArrayOutputStream);
-            byte[] bitmapdata=byteArrayOutputStream.toByteArray();
-            FileOutputStream fileOutputStream=new FileOutputStream(file);
-            fileOutputStream.write(bitmapdata);
-            fileOutputStream.flush();
-            fileOutputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-           // return file;
-        }
-       return file;
-    }
-
 }
